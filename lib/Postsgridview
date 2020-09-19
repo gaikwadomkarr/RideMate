@@ -1,0 +1,58 @@
+// return CustomScrollView(
+                      //   slivers: [
+                      //     SliverOverlapInjector(
+                      //       //                 // This is the flip side of the SliverOverlapAbsorber
+                      //       //                 // above.
+                      //       handle:
+                      //           NestedScrollView.sliverOverlapAbsorberHandleFor(
+                      //               context),
+                      //     ),
+                      //     SliverGrid(
+                      //       gridDelegate:
+                      //           SliverGridDelegateWithFixedCrossAxisCount(
+                      //         crossAxisCount: 3,
+                      //       ),
+                      //       // padding: const EdgeInsets.all(8.0),
+                      //       // sliver: SliverGridDelegateWithFixedCrossAxisCount(
+                      //       delegate: SliverChildBuilderDelegate(
+                      //           (BuildContext context, int index) {
+                      //         // return Container(
+                      //         // child: FutureBuilder<ViewProfile>(
+                      //         // future: getprofile(),
+                      //         // builder: (BuildContext context, AsyncSnapshot<ViewProfile> snapshot){
+                      //         // if(!snapshot.hasData){
+                      //         //   return Container();
+                      //         // }
+                      //         // else if(viewProfile != null){
+                      //         // child: GridView.count(
+                      //         //   crossAxisCount: 3,
+                      //         //   scrollDirection: Axis.vertical,
+                      //         //   childAspectRatio: 1.0,
+                      //         //   children: List.generate( viewProfile.userPostDetails.length,(int index) {
+                      //         return Container(
+                      //             // height: 10,
+                      //             // width: MediaQuery.of(context).size.width /3,
+                      //             margin: EdgeInsets.all(5),
+                      //             decoration: BoxDecoration(
+                      //                 image: DecorationImage(
+                      //                     image: NetworkImage(viewProfile
+                      //                         .userPostDetails[index].photoUrl))),
+                      //             child: Image.network(viewProfile
+                      //                 .userPostDetails[index].photoUrl));
+                      //         //   }
+                      //         //   ),
+                      //         // )
+                      //         // }
+                      //         //     }
+                      //         // ),
+                      //         // );
+                      //         return ListTile(
+                      //           title: Text('Item $index'),
+                      //         );
+                      //       }, childCount: viewProfile.userPostDetails.length),
+                      //       // itemExtent: 20,
+
+                      //       // ),
+                      //     ),
+                      //   ],
+                      // );
