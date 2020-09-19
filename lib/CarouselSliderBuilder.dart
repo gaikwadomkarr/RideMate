@@ -39,9 +39,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
         _videocontroller.add(FlickManager(
             autoPlay: false,
             autoInitialize: true,
-            videoPlayerController: VideoPlayerController.network(
-                widget.postImages[i],
-                videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))));
+            videoPlayerController:
+                VideoPlayerController.network(widget.postImages[i])));
       } else {
         _videocontroller.add(widget.postImages[i]);
       }
@@ -92,6 +91,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
     }
     super.dispose();
   }
+
+  void refreshUI() {}
 
   @override
   Widget build(BuildContext context) {

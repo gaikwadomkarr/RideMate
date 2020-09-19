@@ -6,10 +6,12 @@ import 'package:bikingapp/HomeScreen.dart';
 import 'package:bikingapp/Models/AllPostsModel.dart';
 import 'package:bikingapp/Models/SessionData.dart';
 import 'package:bikingapp/Models/ViewProfile.dart';
+import 'package:bikingapp/TrimmerView.dart';
 import 'package:bikingapp/place_service.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -19,6 +21,8 @@ import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_trimmer/trim_editor.dart';
+import 'package:video_trimmer/video_trimmer.dart';
 
 class NewPost extends StatefulWidget {
   final bool isNewPost;
@@ -50,7 +54,8 @@ class _NewPostState extends State<NewPost> {
   List<String> images1 = new List<String>();
   List<int> imageheights = new List<int>();
   List<MultipartFile> imagesmultipart = new List<MultipartFile>();
-  List<dynamic> _videocontrollers = new List<dynamic>();
+  List<dynamic> _videocontrollers = [];
+  final Trimmer _trimmer = Trimmer();
 
   String _error = 'No Error Dectected';
 
@@ -69,6 +74,12 @@ class _NewPostState extends State<NewPost> {
 
   @override
   void dispose() {
+    for (int i = 0; i < _videocontrollers.length; i++) {
+      if (_videocontrollers[current] is FlickManager) {
+        _videocontrollers[current].dispose();
+      }
+    }
+
     super.dispose();
   }
 
@@ -98,38 +109,62 @@ class _NewPostState extends State<NewPost> {
   }
 
   Future getVideo(BuildContext changeImgContext) async {
-    FilePickerResult image1 = await FilePicker.platform.pickFiles();
-    images1.add(image1.files.single.path);
-    print('this is video path => ' + image1.files.single.path);
-
-    _videocontrollers = [];
-    for (int i = 0; i < images1.length; i++) {
-      if (images1[i].contains('mp4')) {
-        _videocontrollers.add(VideoPlayerController.network(images1[i]));
-      } else {
-        _videocontrollers.add(images1[i]);
-      }
+    ImagePicker imagePicker = new ImagePicker();
+    String videoPath = "";
+    File video = await FilePicker.getFile(type: FileType.video);
+    print('this is picked path => ' + video.path);
+    print('images1 list before => ' + images1.toString());
+    File finalFile = File(video.path);
+    if (video != null) {
+      await _trimmer.loadVideo(videoFile: video);
+      videoPath = await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) {
+        return TrimmerView(_trimmer);
+      }));
+      setState(() {
+        // videoPath = videoPath.replaceAll(":", "_").replaceAll(",", "_");
+      });
+    }
+    if (videoPath != null) {
+      images1.add(videoPath);
+      _videocontrollers.add(FlickManager(
+          autoPlay: false,
+          autoInitialize: true,
+          videoPlayerController: VideoPlayerController.network(videoPath,
+              videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))));
     }
 
-    for (int i = 0; i < _videocontrollers.length; i++) {
-      if (images1[i].contains('mp4')) {
-        print('inside found mp4');
-        print(_videocontrollers[i].toString());
-        _videocontrollers[i]
-          ..initialize().then((value) async {
-            setState(() {});
-            _videocontrollers[i].addListener(() {});
-            _videocontrollers[i].setLooping(true);
-            _videocontrollers[i].pause();
-          });
-      }
-    }
+    print('this is video path => ' + videoPath);
+
+    // _videocontrollers = [];
+    // for (int i = 0; i < images1.length; i++) {
+    //   print("already in for loop");
+    //   if (images1[i].contains('mp4')) {
+
+    //   } else {
+    //     _videocontrollers.add(images1[i]);
+    //   }
+    // }
+
+    // for (int i = 0; i < _videocontrollers.length; i++) {
+    //   if (_videocontrollers[index] is VideoPlayerController) {
+    //     print('inside found mp4');
+    //     print(_videocontrollers[i].toString());
+    //     _videocontrollers[i]
+    //       ..initialize().then((value) async {
+    //         setState(() {});
+    //         _videocontrollers[i].addListener(() {});
+    //         _videocontrollers[i].setLooping(true);
+    //         _videocontrollers[i].pause();
+    //       });
+    //   }
+    // }
+
     print('images1 list => ' + images1.toString());
   }
 
   Future<void> loadAssets() async {
     // images.clear();
-    images1.clear();
     List<Asset> resultList = List<Asset>();
     String error = 'No Error Dectected';
 
@@ -174,6 +209,7 @@ class _NewPostState extends State<NewPost> {
             .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
       );
       images1.add(file.path);
+      _videocontrollers.add(file.path);
       imageheights.add(resultList[i].originalHeight);
     }
     setState(() {});
@@ -223,7 +259,7 @@ class _NewPostState extends State<NewPost> {
   }
 
   void _clearCachedFiles() {
-    FilePicker.platform.clearTemporaryFiles().then((result) {
+    FilePicker.clearTemporaryFiles().then((result) {
       _scaffoldKey.currentState.showSnackBar(
         SnackBar(
           backgroundColor: result ? Colors.green : Colors.red,
@@ -346,7 +382,7 @@ class _NewPostState extends State<NewPost> {
                       // height: MediaQuery.of(context).size.height / 1.5,
                       // width: MediaQuery.of(context).size.width / 1.5,
 
-                      child: images1.length == 0
+                      child: _videocontrollers.length == 0
                           ? GestureDetector(
                               onTap: () {
                                 showProfileOptions(context, "Pick from Gallery",
@@ -378,6 +414,8 @@ class _NewPostState extends State<NewPost> {
                                           onPageChanged: (index, reason) {
                                             setState(() {
                                               current = index;
+                                              print(
+                                                  "this is current => $current");
                                             });
                                           },
                                           disableCenter: false,
@@ -386,39 +424,18 @@ class _NewPostState extends State<NewPost> {
                                           autoPlay: false,
                                           initialPage: 0,
                                           height: 300),
-                                      items: List.generate(images1.length,
-                                          (index) {
-                                        if (images1[index].contains('jpg') ||
-                                            images1[index].contains('png')) {
+                                      items: List.generate(
+                                          _videocontrollers.length, (index) {
+                                        if (_videocontrollers[index]
+                                            is FlickManager) {
+                                          print('video is here');
+                                          return FlickVideoPlayer(
+                                              flickManager:
+                                                  _videocontrollers[index]);
+                                        } else {
                                           print('image is here');
                                           return Image.file(
-                                              File(images1[index]));
-                                        } else {
-                                          print('video is here');
-                                          return _videocontrollers[index]
-                                                  .value
-                                                  .initialized
-                                              ? AspectRatio(
-                                                  aspectRatio:
-                                                      _videocontrollers[index]
-                                                          .value
-                                                          .aspectRatio,
-                                                  child: Stack(
-                                                    children: [
-                                                      VideoPlayer(
-                                                          _videocontrollers[
-                                                              index]),
-                                                      PlayPauseOverlay(
-                                                        controller:
-                                                            _videocontrollers[
-                                                                index],
-                                                      )
-                                                    ],
-                                                  ),
-                                                )
-                                              : Container(
-                                                  color: Colors.blue,
-                                                );
+                                              File(_videocontrollers[index]));
                                         }
                                       })),
                                 ),
@@ -460,17 +477,20 @@ class _NewPostState extends State<NewPost> {
                                         ),
                                       ),
                                       GestureDetector(
-                                          onTap: () async {
+                                          onTap: () {
+                                            print("deleting $current");
                                             images1.removeAt(current);
                                             // _clearCachedFiles();
-                                            _videocontrollers[current]
-                                                .removeListener(() {});
+                                            if (_videocontrollers[current]
+                                                is FlickManager) {
+                                              // _videocontrollers[current]
+                                              //     .dispose();
+                                            }
                                             _videocontrollers.removeAt(current);
                                             // images.removeAt(current);
                                             setState(() {});
                                           },
-                                          child: Icon(
-                                              Icons.delete_outline_rounded)),
+                                          child: Icon(Icons.delete_outline)),
                                       GestureDetector(
                                         onTap: () {
                                           images1.length != 3
@@ -505,7 +525,7 @@ class _NewPostState extends State<NewPost> {
                                                     .getAbsolutePath(
                                                         images1[current]));
                                           },
-                                          child: Icon(Icons.crop_outlined)),
+                                          child: Icon(Icons.crop)),
                                     ],
                                   ),
                                 ),

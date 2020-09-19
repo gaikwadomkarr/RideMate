@@ -130,7 +130,7 @@ class _EventScreenState extends State<EventScreen> {
                         //   selectedPostId = postIds[outerindex];
                         // },
                         child: Icon(
-                          Icons.more_horiz_rounded,
+                          Icons.more_horiz,
                           color: color1,
                           size: 30,
                         ),
