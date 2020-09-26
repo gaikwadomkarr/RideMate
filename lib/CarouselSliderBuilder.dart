@@ -85,11 +85,14 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
   @override
   void dispose() {
     // TODO: implement dispose
+
+    super.dispose();
     for (int i = 0; i < _videocontroller.length; i++) {
       // _videocontroller[i].removeListener(() {});
-      _videocontroller[i].dispose();
+      if (widget.postImages[i].contains("mp4")) {
+        _videocontroller[i].dispose();
+      }
     }
-    super.dispose();
   }
 
   void refreshUI() {}
@@ -97,7 +100,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
   @override
   Widget build(BuildContext context) {
     return widget.postImages.length > 1
-        ? Column(
+        ? Stack(
+            alignment: Alignment.bottomCenter,
             children: <Widget>[
               CarouselSlider(
                   options: CarouselOptions(
@@ -117,14 +121,17 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                       disableCenter: false,
                       enableInfiniteScroll: false,
                       enlargeCenterPage: true,
-                      // height: 350,
                       aspectRatio: 1 / 1),
                   items: List.generate(widget.postImages.length, (index) {
                     if (widget.postImages[index].contains('jpg') ||
                         widget.postImages[index].contains("png")) {
-                      return Image.network(
-                        widget.postImages[index],
-                        fit: BoxFit.contain,
+                      return Container(
+                        width: MediaQuery.of(context).size.width,
+                        color: Colors.black,
+                        child: Image.network(
+                          widget.postImages[index],
+                          fit: BoxFit.contain,
+                        ),
                       );
                     } else {
                       // return _videocontroller[index]
@@ -180,35 +187,38 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                   // );
 
                   ),
-              Container(
-                margin: EdgeInsets.all(5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          widget.postImages.length,
-                          (index) {
-                            return Container(
-                              key: PageStorageKey("postdot$index"),
-                              width: current == index ? 8.0 : 6.0,
-                              height: current == index ? 8.0 : 6.0,
-                              margin: EdgeInsets.symmetric(
-                                  vertical: 10.0, horizontal: 2.0),
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: current == index
-                                      ? Color.fromRGBO(0, 0, 0, 0.9)
-                                      : Color.fromRGBO(0, 0, 0, 0.4)),
-                            );
-                          },
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  margin: EdgeInsets.all(5),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            widget.postImages.length,
+                            (index) {
+                              return Container(
+                                key: PageStorageKey("postdot$index"),
+                                width: current == index ? 8.0 : 6.0,
+                                height: current == index ? 8.0 : 6.0,
+                                margin: EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 2.0),
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: current == index
+                                        ? Color.fromRGBO(0, 0, 0, 0.9)
+                                        : Color.fromRGBO(0, 0, 0, 0.4)),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

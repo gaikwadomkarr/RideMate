@@ -20,6 +20,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:jiffy/jiffy.dart';
 import 'package:popup_menu/popup_menu.dart';
+import 'package:readmore/readmore.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostsScreen extends StatefulWidget {
@@ -178,6 +179,8 @@ class _PostsScreenState extends State<PostsScreen>
         offsetA = statelessControllerA.offset;
       });
     });
+
+    PageController pageController = PageController(viewportFraction: 1);
     return FutureBuilder<List<String>>(
       future: refresh,
       builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
@@ -186,278 +189,302 @@ class _PostsScreenState extends State<PostsScreen>
             child: Container(child: Text('No Posts Available')),
           );
         } else if (allPostsModel.data.length > 0) {
-          return ListView(
-            // key: PageStorageKey<String>('controllerA'),
-            controller: statelessControllerA,
-            children: List.generate(allPostsModel.data.length, (outerindex) {
-              return Container(
-                // height: 500,
-                margin: EdgeInsets.fromLTRB(15, 15, 15, 0),
-                decoration: new BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10.0,
-                      offset: const Offset(0.0, 0.0),
-                    ),
-                  ],
-                ),
-                child: Column(children: <Widget>[
-                  ListTile(
-                    leading: Container(
-                      height: 40,
-                      width: 40,
-                      // margin: EdgeInsets.fromLTRB(20, 10, 10, 0),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                              image: AssetImage('assets/images/OLQE6Q0.jpg'))),
-                    ),
-                    title: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ProfilePage1(
-                                      userId: allPostsModel
-                                          .data[outerindex].postedBy.id,
-                                      name: allPostsModel
-                                          .data[outerindex].postedBy.name,
-                                    )));
-                      },
-                      child: Container(
-                        margin: EdgeInsets.only(left: 5),
-                        alignment: AlignmentDirectional.centerStart,
-                        child: Text(
-                          name[outerindex],
-                          style: mediumTxtStyle().copyWith(fontSize: 15),
+          return PageView.builder(
+              pageSnapping: true,
+              scrollDirection: Axis.vertical,
+              // key: PageStorageKey<String>('controllerA'),
+              controller: pageController,
+              itemCount: allPostsModel.data.length,
+              itemBuilder: (context, outerindex) {
+                bool readmore = false;
+                return Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: Column(mainAxisAlignment: MainAxisAlignment.start,
+                      // physics: readmore ? null : NeverScrollableScrollPhysics(),
+                      // shrinkWrap: true,
+                      children: <Widget>[
+                        ListTile(
+                          leading: Container(
+                            height: 40,
+                            width: 40,
+                            // margin: EdgeInsets.fromLTRB(20, 10, 10, 0),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                image: DecorationImage(
+                                    image: AssetImage(
+                                        'assets/images/OLQE6Q0.jpg'))),
+                          ),
+                          title: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ProfilePage1(
+                                            userId: allPostsModel
+                                                .data[outerindex].postedBy.id,
+                                            name: allPostsModel
+                                                .data[outerindex].postedBy.name,
+                                          )));
+                            },
+                            child: Container(
+                              margin: EdgeInsets.only(left: 5),
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Text(
+                                name[outerindex],
+                                style: mediumTxtStyle().copyWith(fontSize: 15),
+                              ),
+                            ),
+                          ),
+                          subtitle: null,
+                          trailing: Container(
+                            child: GestureDetector(
+                              key: btnkeys[outerindex],
+                              onTap: () {
+                                menuOptions(context, "Choose One", outerindex,
+                                    postOptions(outerindex));
+                                selectedPostId = postIds[outerindex];
+                              },
+                              child: Icon(
+                                Icons.more_vert,
+                                color: color1,
+                                size: 30,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    subtitle: null,
-                    trailing: Container(
-                      child: GestureDetector(
-                        key: btnkeys[outerindex],
-                        onTap: () {
-                          menuOptions(context, "Choose One", outerindex,
-                              postOptions(outerindex));
-                          selectedPostId = postIds[outerindex];
-                        },
-                        child: Icon(
-                          Icons.more_vert,
-                          color: color1,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ),
-                  carousel[outerindex],
-                  // allPostsModel.data[outerindex].postImages.length > 1
-                  //     ? Column(
-                  //         children: <Widget>[
-                  //           Container(
-                  //             height: 300,
-                  //             child: CarouselSlider(
-                  //                 options: CarouselOptions(
-                  //                     // pageViewKey:
-                  //                     //     PageStorageKey('post$outerindex'),
-                  //                     // carouselController:
-                  //                     //     carouselcontrlrs[outerindex],
-                  //                     viewportFraction: 1,
-                  //                     onPageChanged: (index, reason) {
-                  //                       setState(() {
-                  //                         current[outerindex] = index;
-                  //                       });
-                  //                       print(current);
-                  //                     },
-                  //                     disableCenter: false,
-                  //                     enableInfiniteScroll: false,
-                  //                     enlargeCenterPage: true,
-                  //                     height: 300),
-                  //                 items: allPostsModel
-                  //                     .data[outerindex].postImages
-                  //                     .map((e) {
-                  //                   return Container(
-                  //                     child: Image.network(
-                  //                       e,
-                  //                       fit: BoxFit.contain,
-                  //                     ),
-                  //                   );
-                  //                 }).toList()),
-                  //             // child: PageView.builder(
-                  //             //     controller: _controller,
-                  //             //     itemBuilder: (BuildContext context, int index) {
-                  //             //       return Image.network(widget.postImages[index],
-                  //             //           fit: BoxFit.fitHeight);
-                  //             //     },
-                  //             //     itemCount: widget.postImages.length),
-                  //           ),
-                  //           Container(
-                  //             margin: EdgeInsets.all(5),
-                  //             child: Row(
-                  //               mainAxisAlignment:
-                  //                   MainAxisAlignment.spaceAround,
-                  //               crossAxisAlignment: CrossAxisAlignment.center,
-                  //               children: <Widget>[
-                  //                 Container(
-                  //                   child: Row(
-                  //                     mainAxisAlignment:
-                  //                         MainAxisAlignment.center,
-                  //                     children: List.generate(
-                  //                       allPostsModel
-                  //                           .data[outerindex].postImages.length,
-                  //                       (index) {
-                  //                         return Container(
-                  //                           // key: PageStorageKey("postdot$index"),
-                  //                           width: current[outerindex] == index
-                  //                               ? 8.0
-                  //                               : 6.0,
-                  //                           height: current[outerindex] == index
-                  //                               ? 8.0
-                  //                               : 6.0,
-                  //                           margin: EdgeInsets.symmetric(
-                  //                               vertical: 10.0,
-                  //                               horizontal: 2.0),
-                  //                           decoration: BoxDecoration(
-                  //                               shape: BoxShape.circle,
-                  //                               color:
-                  //                                   current[outerindex] == index
-                  //                                       ? Color.fromRGBO(
-                  //                                           0, 0, 0, 0.9)
-                  //                                       : Color.fromRGBO(
-                  //                                           0, 0, 0, 0.4)),
-                  //                         );
-                  //                       },
-                  //                     ),
-                  //                   ),
-                  //                 ),
-                  //               ],
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       )
-                  //     : Image.network(
-                  //         allPostsModel.data[outerindex].postImages[0],
-                  //         fit: BoxFit.contain,
-                  //       ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.fromLTRB(20, 10, 0, 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                        carousel[outerindex],
+                        // allPostsModel.data[outerindex].postImages.length > 1
+                        //     ? Column(
+                        //         children: <Widget>[
+                        //           Container(
+                        //             height: 300,
+                        //             child: CarouselSlider(
+                        //                 options: CarouselOptions(
+                        //                     // pageViewKey:
+                        //                     //     PageStorageKey('post$outerindex'),
+                        //                     // carouselController:
+                        //                     //     carouselcontrlrs[outerindex],
+                        //                     viewportFraction: 1,
+                        //                     onPageChanged: (index, reason) {
+                        //                       setState(() {
+                        //                         current[outerindex] = index;
+                        //                       });
+                        //                       print(current);
+                        //                     },
+                        //                     disableCenter: false,
+                        //                     enableInfiniteScroll: false,
+                        //                     enlargeCenterPage: true,
+                        //                     height: 300),
+                        //                 items: allPostsModel
+                        //                     .data[outerindex].postImages
+                        //                     .map((e) {
+                        //                   return Container(
+                        //                     child: Image.network(
+                        //                       e,
+                        //                       fit: BoxFit.contain,
+                        //                     ),
+                        //                   );
+                        //                 }).toList()),
+                        //             // child: PageView.builder(
+                        //             //     controller: _controller,
+                        //             //     itemBuilder: (BuildContext context, int index) {
+                        //             //       return Image.network(widget.postImages[index],
+                        //             //           fit: BoxFit.fitHeight);
+                        //             //     },
+                        //             //     itemCount: widget.postImages.length),
+                        //           ),
+                        //           Container(
+                        //             margin: EdgeInsets.all(5),
+                        //             child: Row(
+                        //               mainAxisAlignment:
+                        //                   MainAxisAlignment.spaceAround,
+                        //               crossAxisAlignment: CrossAxisAlignment.center,
+                        //               children: <Widget>[
+                        //                 Container(
+                        //                   child: Row(
+                        //                     mainAxisAlignment:
+                        //                         MainAxisAlignment.center,
+                        //                     children: List.generate(
+                        //                       allPostsModel
+                        //                           .data[outerindex].postImages.length,
+                        //                       (index) {
+                        //                         return Container(
+                        //                           // key: PageStorageKey("postdot$index"),
+                        //                           width: current[outerindex] == index
+                        //                               ? 8.0
+                        //                               : 6.0,
+                        //                           height: current[outerindex] == index
+                        //                               ? 8.0
+                        //                               : 6.0,
+                        //                           margin: EdgeInsets.symmetric(
+                        //                               vertical: 10.0,
+                        //                               horizontal: 2.0),
+                        //                           decoration: BoxDecoration(
+                        //                               shape: BoxShape.circle,
+                        //                               color:
+                        //                                   current[outerindex] == index
+                        //                                       ? Color.fromRGBO(
+                        //                                           0, 0, 0, 0.9)
+                        //                                       : Color.fromRGBO(
+                        //                                           0, 0, 0, 0.4)),
+                        //                         );
+                        //                       },
+                        //                     ),
+                        //                   ),
+                        //                 ),
+                        //               ],
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       )
+                        //     : Image.network(
+                        //         allPostsModel.data[outerindex].postImages[0],
+                        //         fit: BoxFit.contain,
+                        //       ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            new Container(
-                              alignment: Alignment.centerLeft,
-                              child: GestureDetector(
-                                  onTap: () {
-                                    if (_isLiked[outerindex]) {
-                                      setState(() {
-                                        _isLiked[outerindex] = false;
-                                      });
-                                      selectedPostId = postIds[outerindex];
-                                      hitunLikeApi();
-                                      count--;
-                                      print(_isLiked);
-                                    } else {
-                                      setState(() {
-                                        _isLiked[outerindex] = true;
-                                      });
-                                      selectedPostId = postIds[outerindex];
-                                      hitLikeApi();
-                                      count++;
-                                      print(_isLiked);
-                                    }
-                                  },
-                                  child: _isLiked[outerindex]
-                                      ? Icon(
-                                          FlutterIcons.heart_faw5s,
-                                          size: 23,
-                                          color: Colors.red[900],
-                                        )
-                                      : Icon(
-                                          FlutterIcons.heart_faw5,
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.fromLTRB(20, 10, 0, 10),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  new Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: GestureDetector(
+                                        onTap: () {
+                                          if (_isLiked[outerindex]) {
+                                            setState(() {
+                                              _isLiked[outerindex] = false;
+                                            });
+                                            selectedPostId =
+                                                postIds[outerindex];
+                                            hitunLikeApi();
+                                            count--;
+                                            print(_isLiked);
+                                          } else {
+                                            setState(() {
+                                              _isLiked[outerindex] = true;
+                                            });
+                                            selectedPostId =
+                                                postIds[outerindex];
+                                            hitLikeApi();
+                                            count++;
+                                            print(_isLiked);
+                                          }
+                                        },
+                                        child: _isLiked[outerindex]
+                                            ? Icon(
+                                                FlutterIcons.heart_faw5s,
+                                                size: 23,
+                                                color: Colors.red[900],
+                                              )
+                                            : Icon(
+                                                FlutterIcons.heart_faw5,
+                                                size: 23,
+                                                color: Colors.red[900],
+                                              )),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      getSelectedPostsLikes(outerindex);
+                                    },
+                                    child: Container(
+                                        alignment: Alignment.centerLeft,
+                                        margin: EdgeInsets.only(left: 10),
+                                        child: new Text(
+                                          allPostsModel
+                                                  .data[outerindex].likes.length
+                                                  .toString() +
+                                              ' likes',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600),
+                                        )),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 10),
+                                    child: GestureDetector(
+                                        onTap: () {
+                                          openComments(outerindex);
+                                          goToLatest();
+                                        },
+                                        child: Icon(
+                                          FlutterIcons.comment_dots_faw5,
                                           size: 23,
                                           color: Colors.red[900],
                                         )),
+                                  ),
+                                  Container(
+                                      alignment: Alignment.centerLeft,
+                                      margin: EdgeInsets.only(left: 10),
+                                      child: new Text(
+                                        allPostsModel
+                                            .data[outerindex].comments.length
+                                            .toString(),
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600),
+                                      )),
+                                ],
+                              ),
                             ),
-                            GestureDetector(
-                              onTap: () {
-                                getSelectedPostsLikes(outerindex);
-                              },
+                            Align(
+                              alignment: Alignment.centerRight,
                               child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  margin: EdgeInsets.only(left: 10),
+                                  alignment: Alignment.centerRight,
+                                  margin: EdgeInsets.only(right: 10),
                                   child: new Text(
-                                    allPostsModel.data[outerindex].likes.length
-                                            .toString() +
-                                        ' likes',
+                                    Jiffy(allPostsModel
+                                            .data[outerindex].createdAt)
+                                        .fromNow(),
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.normal),
                                   )),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(left: 10),
-                              child: GestureDetector(
-                                  onTap: () {
-                                    openComments(outerindex);
-                                    goToLatest();
-                                  },
-                                  child: Icon(
-                                    FlutterIcons.comment_dots_faw5,
-                                    size: 23,
-                                    color: Colors.red[900],
-                                  )),
-                            ),
-                            Container(
-                                alignment: Alignment.centerLeft,
-                                margin: EdgeInsets.only(left: 10),
-                                child: new Text(
-                                  allPostsModel.data[outerindex].comments.length
-                                      .toString(),
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600),
-                                )),
+                            )
                           ],
                         ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                            alignment: Alignment.centerRight,
-                            margin: EdgeInsets.only(right: 10),
-                            child: new Text(
-                              Jiffy(allPostsModel.data[outerindex].createdAt)
-                                  .fromNow(),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.normal),
-                            )),
-                      )
-                    ],
-                  ),
-                  Container(
-                      alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.fromLTRB(20, 0, 10, 0),
-                      child: Text(title[outerindex], style: titleTxtStyle())),
-                  Container(
-                      alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.fromLTRB(20, 5, 10, 20),
-                      child: Text(body[outerindex], style: bodyTxtStyle())),
-                ]),
-              );
-            }),
-          );
+                        Container(
+                            alignment: Alignment.centerLeft,
+                            margin: EdgeInsets.fromLTRB(20, 0, 10, 0),
+                            child: Text(title[outerindex],
+                                style: titleTxtStyle())),
+                        Expanded(
+                          child: ListView(
+                            // shrinkWrap: true,
+                            children: [
+                              Container(
+                                alignment: Alignment.centerLeft,
+                                margin: EdgeInsets.fromLTRB(20, 5, 10, 20),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      readmore = !readmore;
+                                      print("this is readmore => " +
+                                          readmore.toString());
+                                    });
+                                  },
+                                  child: ReadMoreText(body[outerindex],
+                                      trimMode: TrimMode.Line,
+                                      trimLines: 2,
+                                      trimCollapsedText: ' ...read more',
+                                      trimExpandedText: ' read less',
+                                      style: bodyTxtStyle()),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ]),
+                );
+              });
+          // );
         } else {
           return Container();
         }
