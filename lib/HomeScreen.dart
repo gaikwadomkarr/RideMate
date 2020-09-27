@@ -7,6 +7,7 @@ import 'package:bikingapp/Models/SessionData.dart';
 import 'package:bikingapp/PostsScreen.dart';
 import 'package:bikingapp/ProfilePage1.dart';
 import 'package:bikingapp/SignUpPage.dart';
+import 'package:bikingapp/TilesPostsScreen.dart';
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -52,7 +53,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     children = [
-      PostsScreen(),
+      // PostsScreen(),
+      TilePostsScreen(),
       LoginPage1(),
       EventScreen(),
       SignUpPage(),

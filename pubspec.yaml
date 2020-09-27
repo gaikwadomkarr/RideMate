@@ -57,6 +57,8 @@ dependencies:
   file_picker: ^1.6.3+2
   flick_video_player:
   video_trimmer: ^0.2.7
+  flutter_staggered_grid_view:
+  drag_to_expand:
 
 dev_dependencies:
   flutter_test:
