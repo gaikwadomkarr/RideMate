@@ -22,6 +22,7 @@ import 'package:http/http.dart' as http;
 import 'package:jiffy/jiffy.dart';
 import 'package:popup_menu/popup_menu.dart';
 import 'package:readmore/readmore.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostsScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _PostsScreenState extends State<PostsScreen>
   double offsetA = 0.0;
   List<int> current = List<int>();
   List<CarouselSliderBuilder> carousel = new List<CarouselSliderBuilder>();
-
+  List<bool> isPanelOpened;
   List<GlobalKey> btnkeys = [];
 
   GlobalKey btnKey = GlobalKey();
@@ -79,6 +80,7 @@ class _PostsScreenState extends State<PostsScreen>
       },
       child: SafeArea(
           child: Scaffold(
+        backgroundColor: Colors.white,
         key: _scaffoldKey,
         appBar: AppBar(
           elevation: 2,
@@ -204,69 +206,201 @@ class _PostsScreenState extends State<PostsScreen>
                 return Center(
                   child: Container(
                     decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black),
+                        color: Colors.white,
+                        // border: Border.all(color: Colors.black),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.grey,
+                              offset: Offset(0, 0),
+                              blurRadius: 5)
+                        ],
                         borderRadius: BorderRadius.circular(10)),
                     height: MediaQuery.of(context).size.height - 2,
-                    margin: EdgeInsets.only(top: 10),
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                    margin: EdgeInsets.only(top: 15),
+                    child: Stack(
+                        // mainAxisAlignment: MainAxisAlignment.center,
+                        // crossAxisAlignment: CrossAxisAlignment.center,
                         // physics: readmore ? null : NeverScrollableScrollPhysics(),
                         // shrinkWrap: true,
+                        alignment: Alignment.center,
                         children: <Widget>[
-                          ListTile(
-                            leading: Container(
-                              height: 40,
-                              width: 40,
-                              // margin: EdgeInsets.fromLTRB(20, 10, 10, 0),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                      image: AssetImage(
-                                          'assets/images/OLQE6Q0.jpg'))),
-                            ),
-                            title: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ProfilePage1(
-                                              userId: allPostsModel
-                                                  .data[outerindex].postedBy.id,
-                                              name: allPostsModel
-                                                  .data[outerindex]
-                                                  .postedBy
-                                                  .name,
-                                            )));
-                              },
-                              child: Container(
-                                margin: EdgeInsets.only(left: 5),
-                                alignment: AlignmentDirectional.centerStart,
-                                child: Text(
-                                  name[outerindex],
-                                  style:
-                                      mediumTxtStyle().copyWith(fontSize: 15),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ListTile(
+                                leading: Container(
+                                  height: 40,
+                                  width: 40,
+                                  // margin: EdgeInsets.fromLTRB(20, 10, 10, 0),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              'assets/images/OLQE6Q0.jpg'))),
+                                ),
+                                title: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => ProfilePage1(
+                                                  userId: allPostsModel
+                                                      .data[outerindex]
+                                                      .postedBy
+                                                      .id,
+                                                  name: allPostsModel
+                                                      .data[outerindex]
+                                                      .postedBy
+                                                      .name,
+                                                )));
+                                  },
+                                  child: Text(
+                                    name[outerindex],
+                                    style:
+                                        mediumTxtStyle().copyWith(fontSize: 15),
+                                  ),
+                                ),
+                                subtitle: null,
+                                trailing: Container(
+                                  child: GestureDetector(
+                                    key: btnkeys[outerindex],
+                                    onTap: () {
+                                      menuOptions(context, "Choose One",
+                                          outerindex, postOptions(outerindex));
+                                      selectedPostId = postIds[outerindex];
+                                    },
+                                    child: Icon(
+                                      Icons.more_vert,
+                                      color: color1,
+                                      size: 30,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            subtitle: null,
-                            trailing: Container(
-                              child: GestureDetector(
-                                key: btnkeys[outerindex],
-                                onTap: () {
-                                  menuOptions(context, "Choose One", outerindex,
-                                      postOptions(outerindex));
-                                  selectedPostId = postIds[outerindex];
-                                },
-                                child: Icon(
-                                  Icons.more_vert,
-                                  color: color1,
-                                  size: 30,
-                                ),
+                              carousel[outerindex],
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Container(
+                                    margin: EdgeInsets.fromLTRB(20, 10, 0, 10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        new Container(
+                                          alignment: Alignment.centerLeft,
+                                          child: GestureDetector(
+                                              onTap: () {
+                                                if (_isLiked[outerindex]) {
+                                                  setState(() {
+                                                    _isLiked[outerindex] =
+                                                        false;
+                                                  });
+                                                  selectedPostId =
+                                                      postIds[outerindex];
+                                                  hitunLikeApi();
+                                                  count--;
+                                                  print(_isLiked);
+                                                } else {
+                                                  setState(() {
+                                                    _isLiked[outerindex] = true;
+                                                  });
+                                                  selectedPostId =
+                                                      postIds[outerindex];
+                                                  hitLikeApi();
+                                                  count++;
+                                                  print(_isLiked);
+                                                }
+                                              },
+                                              child: _isLiked[outerindex]
+                                                  ? Icon(
+                                                      FlutterIcons.heart_faw5s,
+                                                      size: 23,
+                                                      color: Colors.red[900],
+                                                    )
+                                                  : Icon(
+                                                      FlutterIcons.heart_faw5,
+                                                      size: 23,
+                                                      color: Colors.red[900],
+                                                    )),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            getSelectedPostsLikes(outerindex);
+                                          },
+                                          child: Container(
+                                              alignment: Alignment.centerLeft,
+                                              margin: EdgeInsets.only(left: 10),
+                                              child: new Text(
+                                                allPostsModel.data[outerindex]
+                                                        .likes.length
+                                                        .toString() +
+                                                    ' likes',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                              )),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.only(left: 10),
+                                          child: GestureDetector(
+                                              onTap: () {
+                                                openComments(outerindex);
+                                                goToLatest();
+                                              },
+                                              child: Icon(
+                                                FlutterIcons.comment_dots_faw5,
+                                                size: 23,
+                                                color: Colors.red[900],
+                                              )),
+                                        ),
+                                        Container(
+                                            alignment: Alignment.centerLeft,
+                                            margin: EdgeInsets.only(left: 10),
+                                            child: new Text(
+                                              allPostsModel.data[outerindex]
+                                                  .comments.length
+                                                  .toString(),
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600),
+                                            )),
+                                      ],
+                                    ),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Container(
+                                        alignment: Alignment.centerRight,
+                                        margin: EdgeInsets.only(right: 10),
+                                        child: new Text(
+                                          Jiffy(allPostsModel
+                                                  .data[outerindex].createdAt)
+                                              .fromNow(),
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.normal),
+                                        )),
+                                  )
+                                ],
                               ),
-                            ),
+                              // Container(
+                              //     alignment: Alignment.centerLeft,
+                              //     margin: EdgeInsets.fromLTRB(20, 0, 10, 0),
+                              //     child: Text(title[outerindex],
+                              //         style: titleTxtStyle())),
+                            ],
                           ),
-                          carousel[outerindex],
+
                           // allPostsModel.data[outerindex].postImages.length > 1
                           //     ? Column(
                           //         children: <Widget>[
@@ -355,120 +489,7 @@ class _PostsScreenState extends State<PostsScreen>
                           //         allPostsModel.data[outerindex].postImages[0],
                           //         fit: BoxFit.contain,
                           //       ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              Container(
-                                margin: EdgeInsets.fromLTRB(20, 10, 0, 10),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    new Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: GestureDetector(
-                                          onTap: () {
-                                            if (_isLiked[outerindex]) {
-                                              setState(() {
-                                                _isLiked[outerindex] = false;
-                                              });
-                                              selectedPostId =
-                                                  postIds[outerindex];
-                                              hitunLikeApi();
-                                              count--;
-                                              print(_isLiked);
-                                            } else {
-                                              setState(() {
-                                                _isLiked[outerindex] = true;
-                                              });
-                                              selectedPostId =
-                                                  postIds[outerindex];
-                                              hitLikeApi();
-                                              count++;
-                                              print(_isLiked);
-                                            }
-                                          },
-                                          child: _isLiked[outerindex]
-                                              ? Icon(
-                                                  FlutterIcons.heart_faw5s,
-                                                  size: 23,
-                                                  color: Colors.red[900],
-                                                )
-                                              : Icon(
-                                                  FlutterIcons.heart_faw5,
-                                                  size: 23,
-                                                  color: Colors.red[900],
-                                                )),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        getSelectedPostsLikes(outerindex);
-                                      },
-                                      child: Container(
-                                          alignment: Alignment.centerLeft,
-                                          margin: EdgeInsets.only(left: 10),
-                                          child: new Text(
-                                            allPostsModel.data[outerindex].likes
-                                                    .length
-                                                    .toString() +
-                                                ' likes',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w600),
-                                          )),
-                                    ),
-                                    Container(
-                                      margin: EdgeInsets.only(left: 10),
-                                      child: GestureDetector(
-                                          onTap: () {
-                                            openComments(outerindex);
-                                            goToLatest();
-                                          },
-                                          child: Icon(
-                                            FlutterIcons.comment_dots_faw5,
-                                            size: 23,
-                                            color: Colors.red[900],
-                                          )),
-                                    ),
-                                    Container(
-                                        alignment: Alignment.centerLeft,
-                                        margin: EdgeInsets.only(left: 10),
-                                        child: new Text(
-                                          allPostsModel
-                                              .data[outerindex].comments.length
-                                              .toString(),
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600),
-                                        )),
-                                  ],
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Container(
-                                    alignment: Alignment.centerRight,
-                                    margin: EdgeInsets.only(right: 10),
-                                    child: new Text(
-                                      Jiffy(allPostsModel
-                                              .data[outerindex].createdAt)
-                                          .fromNow(),
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.normal),
-                                    )),
-                              )
-                            ],
-                          ),
-                          Container(
-                              alignment: Alignment.centerLeft,
-                              margin: EdgeInsets.fromLTRB(20, 0, 10, 0),
-                              child: Text(title[outerindex],
-                                  style: titleTxtStyle())),
+
                           // ListView(
                           //   shrinkWrap: true,
                           //   children: [
@@ -493,24 +514,84 @@ class _PostsScreenState extends State<PostsScreen>
                           //     ),
                           //   ],
                           // ),
-                          DragToExpand(
-                            minSize: 20,
-                            maxSize: 100,
-                            draggable: Container(
-                              color: Colors.transparent,
-                              child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 15),
-                                  decoration: BoxDecoration(
-                                      color: Colors.black38,
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(5),
-                                          bottomLeft: Radius.circular(5))),
-                                  child: Icon(
-                                    Icons.share,
-                                    color: Colors.blueAccent[100],
+                          // DragToExpand(
+                          //   minSize: 20,
+                          //   maxSize: 100,
+                          //   draggable: Container(
+                          //     color: Colors.transparent,
+                          //     child: Container(
+                          //         padding: EdgeInsets.symmetric(horizontal: 15),
+                          //         decoration: BoxDecoration(
+                          //             color: Colors.black38,
+                          //             borderRadius: BorderRadius.only(
+                          //                 topLeft: Radius.circular(5),
+                          //                 bottomLeft: Radius.circular(5))),
+                          //         child: Icon(
+                          //           Icons.share,
+                          //           color: Colors.blueAccent[100],
+                          //         )),
+                          //   ),
+                          //   child: Text(body[outerindex]),
+                          // )
+                          SizedBox.expand(
+                            child: SlidingUpPanel(
+                              boxShadow: null,
+                              // expand: true,
+                              // initialChildSize: 0.1,
+                              minHeight: 35,
+                              margin: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                              parallaxEnabled: true,
+                              color: Colors.white,
+                              maxHeight: MediaQuery.of(context).size.height / 3,
+                              panel: Container(
+                                  margin: EdgeInsets.fromLTRB(10, 35, 10, 10),
+                                  child: ListView(
+                                    children: [
+                                      Container(
+                                          alignment: Alignment.centerLeft,
+                                          margin:
+                                              EdgeInsets.fromLTRB(0, 0, 0, 10),
+                                          child: Text(title[outerindex],
+                                              style: titleTxtStyle())),
+                                      Text(
+                                        body[outerindex],
+                                        style: regularTxtStyle.copyWith(
+                                            color: Colors.black54),
+                                      ),
+                                    ],
                                   )),
+                              onPanelOpened: () {
+                                setState(() {
+                                  isPanelOpened[outerindex] = true;
+                                });
+                              },
+                              onPanelClosed: () {
+                                setState(() {
+                                  isPanelOpened[outerindex] = false;
+                                });
+                              },
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(18.0),
+                                  topRight: Radius.circular(18.0)),
+                              header: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal:
+                                        MediaQuery.of(context).size.width /
+                                            2.5),
+                                child: !isPanelOpened[outerindex]
+                                    ? Icon(
+                                        Icons.keyboard_arrow_up_rounded,
+                                        color: color2,
+                                        size: 40,
+                                      )
+                                    : Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: color2,
+                                        size: 40,
+                                      ),
+                              ),
+                              // backdropEnabled: true,
                             ),
-                            child: Text(body[outerindex]),
                           )
                         ]),
                   ),
@@ -909,6 +990,7 @@ class _PostsScreenState extends State<PostsScreen>
     photozoom = [];
     carouselcontrlrs = [];
     carousel = [];
+    isPanelOpened = [];
 
     for (int i = 0; i < allPostsModel.data.length; i++) {
       name.add(allPostsModel.data[i].postedBy.name.toString());
@@ -924,6 +1006,7 @@ class _PostsScreenState extends State<PostsScreen>
       commentsMap[allPostsModel.data[i].id] = allPostsModel.data[i].comments;
       postIds.add(allPostsModel.data[i].id);
       btnkeys.add(new GlobalKey());
+      isPanelOpened.add(false);
     }
     setState(() {});
     print(name);

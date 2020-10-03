@@ -59,6 +59,7 @@ dependencies:
   video_trimmer: ^0.2.7
   flutter_staggered_grid_view:
   drag_to_expand:
+  sliding_up_panel:
 
 dev_dependencies:
   flutter_test:
