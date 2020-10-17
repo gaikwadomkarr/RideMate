@@ -60,6 +60,7 @@ dependencies:
   flutter_staggered_grid_view:
   drag_to_expand:
   sliding_up_panel:
+  flutter_uploader: ^1.2.0
 
 dev_dependencies:
   flutter_test:

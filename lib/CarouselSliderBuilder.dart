@@ -22,6 +22,7 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
   SharedPreferences prefs;
   int seconds = 0;
   int totalDuration = 0;
+  double minScale = 1;
   List<dynamic> _videocontroller = new List<dynamic>();
   PageController _controller =
       new PageController(keepPage: true, initialPage: 0);
@@ -203,15 +204,15 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                             (index) {
                               return Container(
                                 key: PageStorageKey("postdot$index"),
-                                width: current == index ? 8.0 : 6.0,
-                                height: current == index ? 8.0 : 6.0,
+                                width: current == index ? 10.0 : 7.0,
+                                height: current == index ? 10.0 : 7.0,
                                 margin: EdgeInsets.symmetric(
                                     vertical: 10.0, horizontal: 2.0),
                                 decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: current == index
-                                        ? Color.fromRGBO(0, 0, 0, 0.9)
-                                        : Color.fromRGBO(0, 0, 0, 0.4)),
+                                        ? color4
+                                        : color4.withOpacity(0.5)),
                               );
                             },
                           ),
@@ -225,9 +226,30 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
           )
         : (widget.postImages[0].contains('jpg') ||
                 widget.postImages[0].contains("png"))
-            ? Image.network(
-                widget.postImages[0],
-                fit: BoxFit.contain,
+            ? InteractiveViewer(
+                minScale: 1.0,
+                // maxScale: minScale,
+                // onInteractionStart: (value) {
+                //   setState(() {
+                //     minScale = value;
+                //   });
+                // },
+                panEnabled: true,
+                onInteractionUpdate: (value) {
+                  setState(() {
+                    minScale = value.scale;
+                  });
+                },
+                onInteractionEnd: (value) {
+                  setState(() {
+                    print('this is value $value');
+                    minScale = 1;
+                  });
+                },
+                child: Image.network(
+                  widget.postImages[0],
+                  fit: BoxFit.contain,
+                ),
               )
             // : _videocontroller[0].value.initialized
             //     ? AspectRatio(

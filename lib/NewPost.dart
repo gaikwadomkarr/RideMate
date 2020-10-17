@@ -15,12 +15,15 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:flutter_uploader/flutter_uploader.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_trimmer/storage_dir.dart';
 import 'package:video_trimmer/trim_editor.dart';
 import 'package:video_trimmer/video_trimmer.dart';
 
@@ -43,6 +46,8 @@ class _NewPostState extends State<NewPost> {
   TextEditingController captionTxtController = new TextEditingController();
   TextEditingController locationTxtController = new TextEditingController();
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  FlutterUploader uploader;
+  Path platform = Path();
   var image1;
   File imagepath;
   File croppedFile1;
@@ -62,6 +67,7 @@ class _NewPostState extends State<NewPost> {
   @override
   void initState() {
     super.initState();
+    uploader = FlutterUploader();
     images.clear();
     if (widget.allPostsModel != null) {
       titleTxtController.text = widget.allPostsModel.data[widget.index].title;
@@ -115,26 +121,28 @@ class _NewPostState extends State<NewPost> {
     print('this is picked path => ' + video.path);
     print('images1 list before => ' + images1.toString());
     File finalFile = File(video.path);
+    // if (video != null) {
+    //   await _trimmer.loadVideo(videoFile: video);
+    //   videoPath = await Navigator.of(context)
+    //       .push(MaterialPageRoute(builder: (context) {
+    //     return TrimmerView(_trimmer);
+    //   }));
+    //   setState(() {
+    //     // videoPath = videoPath.replaceAll(":", "_").replaceAll(",", "_");
+    //   });
+    // }
     if (video != null) {
-      await _trimmer.loadVideo(videoFile: video);
-      videoPath = await Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) {
-        return TrimmerView(_trimmer);
-      }));
-      setState(() {
-        // videoPath = videoPath.replaceAll(":", "_").replaceAll(",", "_");
-      });
-    }
-    if (videoPath != null) {
-      images1.add(videoPath);
+      images1.add(video.path);
       _videocontrollers.add(FlickManager(
           autoPlay: false,
           autoInitialize: true,
           videoPlayerController: VideoPlayerController.network(videoPath,
               videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))));
     }
+    setState(() {});
 
     print('this is video path => ' + videoPath);
+    print('images1 fileName => ' + images1[0].split('/').last);
 
     // _videocontrollers = [];
     // for (int i = 0; i < images1.length; i++) {
@@ -161,6 +169,37 @@ class _NewPostState extends State<NewPost> {
     // }
 
     print('images1 list => ' + images1.toString());
+  }
+
+  void _handleFileUpload(List<String> path) async {
+    String path1;
+    Directory dir = await getTemporaryDirectory();
+    path1 = dir.path + '/file_picker';
+
+    final taskId = await uploader.enqueue(
+        url: commonapi + '/api/v1/post/createPost',
+        files: path
+            .map((e) => FileItem(
+                savedDir: path1,
+                filename: e.split('/').last,
+                fieldname: 'multiple_image[]'))
+            .toList(),
+        method: UploadMethod.POST,
+        showNotification: true,
+        data: {
+          'title': titleTxtController.text,
+          'body': captionTxtController.text,
+        },
+        tag: 'uploadtag',
+        headers: {
+          'Authorization': 'Bearer ' + SessionData().token,
+          'Content-type': 'application/json',
+          'Accept': 'application/json'
+        });
+
+    print(taskId);
+
+    // widget.onUploadStarted();
   }
 
   Future<void> loadAssets() async {
@@ -642,7 +681,8 @@ class _NewPostState extends State<NewPost> {
                                           filename:
                                               images1[i].split('/').last));
                                 }
-                                addUpdatePost();
+                                // addUpdatePost();
+                                _handleFileUpload(images1);
                               }),
                         ),
                       ),

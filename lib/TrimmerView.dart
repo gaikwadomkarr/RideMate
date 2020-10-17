@@ -83,7 +83,8 @@ class _TrimmerViewState extends State<TrimmerView> {
                               File file = File(outputPath);
                               var newPath = file.renameSync(file.path
                                   .replaceAll(":", "_")
-                                  .replaceAll(",", "_"));
+                                  .replaceAll(",", "_")
+                                  .replaceAll('-', '_'));
                               print('OUTPUT PATH: ${newPath.path}');
                               final snackBar = SnackBar(
                                 content: Text('Video Saved successfully'),

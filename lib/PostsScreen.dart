@@ -53,13 +53,15 @@ class _PostsScreenState extends State<PostsScreen>
   List<CarouselController> carouselcontrlrs = new List<CarouselController>();
   Timer scrollTimer;
   List<bool> _isLiked;
+  List<PanelController> panelControllers = new List<PanelController>();
   int count = 0;
   double offsetA = 0.0;
   List<int> current = List<int>();
   List<CarouselSliderBuilder> carousel = new List<CarouselSliderBuilder>();
   List<bool> isPanelOpened;
   List<GlobalKey> btnkeys = [];
-
+  double minHeight = 35;
+  double maxHeight;
   GlobalKey btnKey = GlobalKey();
 
   void initState() {
@@ -73,6 +75,7 @@ class _PostsScreenState extends State<PostsScreen>
 
   @override
   Widget build(BuildContext context) {
+    maxHeight = MediaQuery.of(context).size.height / 3;
     return WillPopScope(
       onWillPop: () {
         Navigator.push(context,
@@ -185,6 +188,8 @@ class _PostsScreenState extends State<PostsScreen>
       });
     });
 
+    PanelController panelController = PanelController();
+
     PageController pageController =
         PageController(viewportFraction: 0.8, initialPage: widget.initialPage);
     return FutureBuilder<List<String>>(
@@ -216,7 +221,7 @@ class _PostsScreenState extends State<PostsScreen>
                         ],
                         borderRadius: BorderRadius.circular(10)),
                     height: MediaQuery.of(context).size.height - 2,
-                    margin: EdgeInsets.only(top: 15),
+                    margin: EdgeInsets.only(top: 8, bottom: 8),
                     child: Stack(
                         // mainAxisAlignment: MainAxisAlignment.center,
                         // crossAxisAlignment: CrossAxisAlignment.center,
@@ -226,7 +231,7 @@ class _PostsScreenState extends State<PostsScreen>
                         children: <Widget>[
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               ListTile(
                                 leading: Container(
@@ -380,7 +385,7 @@ class _PostsScreenState extends State<PostsScreen>
                                     alignment: Alignment.centerRight,
                                     child: Container(
                                         alignment: Alignment.centerRight,
-                                        margin: EdgeInsets.only(right: 10),
+                                        margin: EdgeInsets.only(right: 15),
                                         child: new Text(
                                           Jiffy(allPostsModel
                                                   .data[outerindex].createdAt)
@@ -536,30 +541,35 @@ class _PostsScreenState extends State<PostsScreen>
                           SizedBox.expand(
                             child: SlidingUpPanel(
                               boxShadow: null,
+                              isDraggable: false,
                               // expand: true,
                               // initialChildSize: 0.1,
+                              // collapsed: Center(child: Text("Omkar Gaikwad")),
+                              controller: panelControllers[outerindex],
                               minHeight: 35,
-                              margin: EdgeInsets.fromLTRB(15, 0, 15, 0),
+                              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
                               parallaxEnabled: true,
                               color: Colors.white,
                               maxHeight: MediaQuery.of(context).size.height / 3,
-                              panel: Container(
-                                  margin: EdgeInsets.fromLTRB(10, 35, 10, 10),
-                                  child: ListView(
-                                    children: [
-                                      Container(
-                                          alignment: Alignment.centerLeft,
-                                          margin:
-                                              EdgeInsets.fromLTRB(0, 0, 0, 10),
-                                          child: Text(title[outerindex],
-                                              style: titleTxtStyle())),
-                                      Text(
-                                        body[outerindex],
-                                        style: regularTxtStyle.copyWith(
-                                            color: Colors.black54),
-                                      ),
-                                    ],
-                                  )),
+                              panel: Center(
+                                child: Container(
+                                    margin: EdgeInsets.fromLTRB(20, 35, 10, 10),
+                                    child: ListView(
+                                      children: [
+                                        Container(
+                                            alignment: Alignment.centerLeft,
+                                            margin:
+                                                EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                            child: Text(title[outerindex],
+                                                style: titleTxtStyle())),
+                                        Text(
+                                          body[outerindex],
+                                          style: regularTxtStyle.copyWith(
+                                              color: Colors.black54),
+                                        ),
+                                      ],
+                                    )),
+                              ),
                               onPanelOpened: () {
                                 setState(() {
                                   isPanelOpened[outerindex] = true;
@@ -573,22 +583,59 @@ class _PostsScreenState extends State<PostsScreen>
                               borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(18.0),
                                   topRight: Radius.circular(18.0)),
-                              header: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal:
-                                        MediaQuery.of(context).size.width /
-                                            2.5),
-                                child: !isPanelOpened[outerindex]
-                                    ? Icon(
-                                        Icons.keyboard_arrow_up_rounded,
-                                        color: color2,
-                                        size: 40,
-                                      )
-                                    : Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                        color: color2,
-                                        size: 40,
-                                      ),
+                              header: Center(
+                                child: Container(
+                                  margin: EdgeInsets.only(left: 20, top: 5),
+                                  child: !isPanelOpened[outerindex]
+                                      // ? Icon(
+                                      //     Icons.keyboard_arrow_up_rounded,
+                                      //     color: color2,
+                                      //     size: 40,
+                                      //   )
+                                      // : Icon(
+                                      //     Icons.keyboard_arrow_down_rounded,
+                                      //     color: color2,
+                                      //     size: 40,
+                                      //   ),
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            panelControllers[outerindex].open();
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'Read more',
+                                                style: regularTxtStyle,
+                                              ),
+                                              Icon(
+                                                Icons.keyboard_arrow_up_rounded,
+                                                color: color2,
+                                                size: 25,
+                                              )
+                                            ],
+                                          ),
+                                        )
+                                      : GestureDetector(
+                                          onTap: () {
+                                            panelControllers[outerindex]
+                                                .close();
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'Read less',
+                                                style: regularTxtStyle,
+                                              ),
+                                              Icon(
+                                                Icons
+                                                    .keyboard_arrow_down_rounded,
+                                                color: color2,
+                                                size: 25,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                ),
                               ),
                               // backdropEnabled: true,
                             ),
@@ -991,6 +1038,7 @@ class _PostsScreenState extends State<PostsScreen>
     carouselcontrlrs = [];
     carousel = [];
     isPanelOpened = [];
+    panelControllers = [];
 
     for (int i = 0; i < allPostsModel.data.length; i++) {
       name.add(allPostsModel.data[i].postedBy.name.toString());
@@ -1006,6 +1054,7 @@ class _PostsScreenState extends State<PostsScreen>
       commentsMap[allPostsModel.data[i].id] = allPostsModel.data[i].comments;
       postIds.add(allPostsModel.data[i].id);
       btnkeys.add(new GlobalKey());
+      panelControllers.add(new PanelController());
       isPanelOpened.add(false);
     }
     setState(() {});
