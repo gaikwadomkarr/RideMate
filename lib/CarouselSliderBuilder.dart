@@ -1,6 +1,7 @@
 import 'package:bikingapp/Helpers/AppConstants.dart';
 import 'package:bikingapp/Helpers/LayoutHelpers.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
     _videocontroller = [];
     for (int i = 0; i < widget.postImages.length; i++) {
       if (widget.postImages[i].contains('mp4')) {
-        _videocontroller.add(FlickManager(
+        _videocontroller.add(ChewieController(
+            aspectRatio: 4 / 3,
             autoPlay: false,
             autoInitialize: true,
             videoPlayerController:
@@ -174,8 +176,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                       // : Container(
                       //     height: 50,
                       //   );
-                      return FlickVideoPlayer(
-                        flickManager: _videocontroller[index],
+                      return Chewie(
+                        controller: _videocontroller[index],
                         // flickVideoWithControls: FlickPortraitControls(),
                       );
                     }
@@ -287,8 +289,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
             //     : Container(
             //         height: 50,
             //       );
-            : FlickVideoPlayer(
-                flickManager: _videocontroller[0],
+            : Chewie(
+                controller: _videocontroller[0],
               );
   }
 }

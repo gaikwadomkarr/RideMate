@@ -9,10 +9,12 @@ import 'package:bikingapp/Models/ViewProfile.dart';
 import 'package:bikingapp/TrimmerView.dart';
 import 'package:bikingapp/place_service.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:chewie/chewie.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_uploader/flutter_uploader.dart';
@@ -74,6 +76,8 @@ class _NewPostState extends State<NewPost> {
       captionTxtController.text = widget.allPostsModel.data[widget.index].body;
       images1.addAll(widget.allPostsModel.data[widget.index].postImages);
     }
+    // ChewieController flickManager;
+    // flickManager.videoPlayerController.value.i
 
     // titleTxtController.text = widget.allPostsModel.data[widget.index].title;
   }
@@ -81,7 +85,7 @@ class _NewPostState extends State<NewPost> {
   @override
   void dispose() {
     for (int i = 0; i < _videocontrollers.length; i++) {
-      if (_videocontrollers[current] is FlickManager) {
+      if (_videocontrollers[current] is ChewieController) {
         _videocontrollers[current].dispose();
       }
     }
@@ -133,10 +137,12 @@ class _NewPostState extends State<NewPost> {
     // }
     if (video != null) {
       images1.add(video.path);
-      _videocontrollers.add(FlickManager(
+      _videocontrollers.add(ChewieController(
+          aspectRatio: 4 / 3,
           autoPlay: false,
           autoInitialize: true,
-          videoPlayerController: VideoPlayerController.network(videoPath,
+          showControlsOnInitialize: true,
+          videoPlayerController: VideoPlayerController.network(video.path,
               videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true))));
     }
     setState(() {});
@@ -172,9 +178,23 @@ class _NewPostState extends State<NewPost> {
   }
 
   void _handleFileUpload(List<String> path) async {
-    String path1;
+    String path1 = '';
     Directory dir = await getTemporaryDirectory();
-    path1 = dir.path + '/file_picker';
+    for (int i = 0; i < path.length; i++) {
+      if (path[i].contains('.jpg') || path[i].contains('.png')) {
+        path1 = dir.path;
+      } else {
+        List<String> new1 = path[i].split('/');
+        for (int i = 0; i < new1.length - 1; i++) {
+          if (i == new1.length - 2) {
+            path1 += new1[i];
+          } else {
+            path1 += new1[i] + '/';
+          }
+        }
+        print('this is file to be uploaded => ' + path1);
+      }
+    }
 
     final taskId = await uploader.enqueue(
         url: commonapi + '/api/v1/post/createPost',
@@ -249,7 +269,6 @@ class _NewPostState extends State<NewPost> {
       );
       images1.add(file.path);
       _videocontrollers.add(file.path);
-      imageheights.add(resultList[i].originalHeight);
     }
     setState(() {});
 
@@ -445,11 +464,9 @@ class _NewPostState extends State<NewPost> {
                           : Column(
                               children: [
                                 Container(
-                                  height: 300,
-                                  width: 300,
                                   child: CarouselSlider(
                                       options: CarouselOptions(
-                                          viewportFraction: 0.8,
+                                          viewportFraction: 1,
                                           onPageChanged: (index, reason) {
                                             setState(() {
                                               current = index;
@@ -461,15 +478,21 @@ class _NewPostState extends State<NewPost> {
                                           enableInfiniteScroll: false,
                                           enlargeCenterPage: true,
                                           autoPlay: false,
-                                          initialPage: 0,
-                                          height: 300),
+                                          initialPage: 0),
                                       items: List.generate(
                                           _videocontrollers.length, (index) {
                                         if (_videocontrollers[index]
-                                            is FlickManager) {
+                                            is ChewieController) {
                                           print('video is here');
-                                          return FlickVideoPlayer(
-                                              flickManager:
+                                          return Chewie(
+                                              // preferredDeviceOrientationFullscreen: [
+                                              //   DeviceOrientation.landscapeRight
+                                              // ],
+                                              // flickVideoWithControls:
+                                              //     FlickVideoWithControls(
+                                              //         videoFit:
+                                              //             BoxFit.contain),
+                                              controller:
                                                   _videocontrollers[index]);
                                         } else {
                                           print('image is here');
@@ -521,7 +544,7 @@ class _NewPostState extends State<NewPost> {
                                             images1.removeAt(current);
                                             // _clearCachedFiles();
                                             if (_videocontrollers[current]
-                                                is FlickManager) {
+                                                is ChewieController) {
                                               // _videocontrollers[current]
                                               //     .dispose();
                                             }
