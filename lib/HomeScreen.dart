@@ -53,8 +53,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     children = [
-      // PostsScreen(),
-      TilePostsScreen(),
+      PostsScreen(
+        initialPage: 0,
+      ),
+      // TilePostsScreen(),
       LoginPage1(),
       EventScreen(),
       SignUpPage(),

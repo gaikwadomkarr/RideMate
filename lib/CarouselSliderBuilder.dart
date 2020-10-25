@@ -25,8 +25,7 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
   int totalDuration = 0;
   double minScale = 1;
   List<dynamic> _videocontroller = new List<dynamic>();
-  PageController _controller =
-      new PageController(keepPage: true, initialPage: 0);
+  CarouselController _controller = new CarouselController();
 
   @override
   void initState() {
@@ -38,8 +37,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
     _videocontroller = [];
     for (int i = 0; i < widget.postImages.length; i++) {
       if (widget.postImages[i].contains('mp4')) {
-        _videocontroller.add(ChewieController(
-            aspectRatio: 4 / 3,
+        _videocontroller.add(FlickManager(
+            // aspectRatio: 4 / 3,
             autoPlay: false,
             autoInitialize: true,
             videoPlayerController:
@@ -103,13 +102,14 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
   @override
   Widget build(BuildContext context) {
     return widget.postImages.length > 1
-        ? Stack(
-            alignment: Alignment.bottomCenter,
+        ? Column(
+            // alignment: Alignment.bottomCenter,
             children: <Widget>[
               CarouselSlider(
+                  carouselController: _controller,
                   options: CarouselOptions(
                       // pageViewKey: PageStorageKey('post${widget.index}'),
-                      carouselController: _controller,
+                      scrollDirection: Axis.horizontal,
                       viewportFraction: 1,
                       onPageChanged: (index, reason) {
                         setState(() {
@@ -124,7 +124,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                       disableCenter: false,
                       enableInfiniteScroll: false,
                       enlargeCenterPage: true,
-                      aspectRatio: 1 / 1),
+                      aspectRatio: 1 / 1,
+                      height: 300),
                   items: List.generate(widget.postImages.length, (index) {
                     if (widget.postImages[index].contains('jpg') ||
                         widget.postImages[index].contains("png")) {
@@ -176,8 +177,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                       // : Container(
                       //     height: 50,
                       //   );
-                      return Chewie(
-                        controller: _videocontroller[index],
+                      return FlickVideoPlayer(
+                        flickManager: _videocontroller[index],
                         // flickVideoWithControls: FlickPortraitControls(),
                       );
                     }
@@ -228,30 +229,9 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
           )
         : (widget.postImages[0].contains('jpg') ||
                 widget.postImages[0].contains("png"))
-            ? InteractiveViewer(
-                minScale: 1.0,
-                // maxScale: minScale,
-                // onInteractionStart: (value) {
-                //   setState(() {
-                //     minScale = value;
-                //   });
-                // },
-                panEnabled: true,
-                onInteractionUpdate: (value) {
-                  setState(() {
-                    minScale = value.scale;
-                  });
-                },
-                onInteractionEnd: (value) {
-                  setState(() {
-                    print('this is value $value');
-                    minScale = 1;
-                  });
-                },
-                child: Image.network(
-                  widget.postImages[0],
-                  fit: BoxFit.contain,
-                ),
+            ? Image.network(
+                widget.postImages[0],
+                fit: BoxFit.contain,
               )
             // : _videocontroller[0].value.initialized
             //     ? AspectRatio(
@@ -289,8 +269,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
             //     : Container(
             //         height: 50,
             //       );
-            : Chewie(
-                controller: _videocontroller[0],
+            : FlickVideoPlayer(
+                flickManager: _videocontroller[0],
               );
   }
 }

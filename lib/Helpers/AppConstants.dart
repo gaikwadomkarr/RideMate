@@ -4,7 +4,7 @@ final color1 = Color(0xFF00784B);
 final color2 = Color(0xFF42A982);
 final color3 = Color(0xFF088CE6);
 final color4 = Color(0xFF7AC6FB);
-final String commonapi = 'http://192.168.0.106:4000';
+final String commonapi = 'http://192.168.0.107:4000';
 
 TextStyle smallTxtStyle = TextStyle(
   fontFamily: "Roboto",
