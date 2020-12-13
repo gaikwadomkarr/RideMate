@@ -19,6 +19,7 @@ class CarouselSliderBuilder extends StatefulWidget {
 }
 
 class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
+  int previousIndex = 0;
   int current = 0;
   SharedPreferences prefs;
   int seconds = 0;
@@ -37,6 +38,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
     _videocontroller = [];
     for (int i = 0; i < widget.postImages.length; i++) {
       if (widget.postImages[i].contains('mp4')) {
+        // FlickManager flickManager;
+        // flickManager.flickControlManager.pa
         _videocontroller.add(FlickManager(
             // aspectRatio: 4 / 3,
             autoPlay: false,
@@ -102,8 +105,8 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
   @override
   Widget build(BuildContext context) {
     return widget.postImages.length > 1
-        ? Column(
-            // alignment: Alignment.bottomCenter,
+        ? Stack(
+            alignment: Alignment.bottomCenter,
             children: <Widget>[
               CarouselSlider(
                   carouselController: _controller,
@@ -114,10 +117,15 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                       onPageChanged: (index, reason) {
                         setState(() {
                           current = index;
-                          // if (_videocontroller[index] ==
-                          //     VideoPlayerController) {
-                          //   _videocontroller[index].pause();
-                          // }
+                          previousIndex = index - 1;
+                          if (previousIndex < current) {
+                            // _videocontroller[index + 1]
+                            //     .flickControlManager
+                            //     .pause();
+                          }
+                          // _videocontroller[index - 1]
+                          //     .flickControlManager
+                          //     .pause();
                         });
                         print(current);
                       },
@@ -206,17 +214,16 @@ class _CarouselSliderBuilderState extends State<CarouselSliderBuilder> {
                             widget.postImages.length,
                             (index) {
                               return Container(
-                                key: PageStorageKey("postdot$index"),
-                                width: current == index ? 10.0 : 7.0,
-                                height: current == index ? 10.0 : 7.0,
-                                margin: EdgeInsets.symmetric(
-                                    vertical: 10.0, horizontal: 2.0),
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: current == index
-                                        ? color4
-                                        : color4.withOpacity(0.5)),
-                              );
+                                  key: PageStorageKey("postdot$index"),
+                                  width: current == index ? 10.0 : 7.0,
+                                  height: current == index ? 10.0 : 7.0,
+                                  margin: EdgeInsets.symmetric(
+                                      vertical: 10.0, horizontal: 2.0),
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: current == index
+                                          ? Colors.grey[700]
+                                          : Colors.grey[400]));
                             },
                           ),
                         ),
