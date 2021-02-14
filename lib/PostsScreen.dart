@@ -287,21 +287,15 @@ class _PostsScreenState extends State<PostsScreen>
                                     child: GestureDetector(
                                         onTap: () {
                                           if (_isLiked[outerindex]) {
-                                            setState(() {
-                                              _isLiked[outerindex] = false;
-                                            });
                                             selectedPostId =
                                                 postIds[outerindex];
-                                            hitunLikeApi();
+                                            hitunLikeApi(outerindex);
                                             count--;
                                             print(_isLiked);
                                           } else {
-                                            setState(() {
-                                              _isLiked[outerindex] = true;
-                                            });
                                             selectedPostId =
                                                 postIds[outerindex];
-                                            hitLikeApi();
+                                            hitLikeApi(outerindex);
                                             count++;
                                             print(_isLiked);
                                           }
@@ -326,10 +320,15 @@ class _PostsScreenState extends State<PostsScreen>
                                         alignment: Alignment.centerLeft,
                                         margin: EdgeInsets.only(left: 10),
                                         child: new Text(
-                                          allPostsModel
-                                                  .data[outerindex].likes.length
-                                                  .toString() +
-                                              ' likes',
+                                          // allPostsModel
+                                          //         .data[outerindex].likes.length
+                                          //         .toString() +
+                                          likesMap[postIds[outerindex]] != null
+                                              ? likesMap[postIds[outerindex]]
+                                                      .length
+                                                      .toString() +
+                                                  ' likes'
+                                              : "0" + ' likes',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               fontSize: 15,
@@ -341,7 +340,7 @@ class _PostsScreenState extends State<PostsScreen>
                                     child: GestureDetector(
                                         onTap: () {
                                           openComments(outerindex);
-                                          goToLatest();
+                                          // goToLatest();
                                         },
                                         child: Icon(
                                           FlutterIcons.comment_dots_faw5,
@@ -810,12 +809,16 @@ class _PostsScreenState extends State<PostsScreen>
     print(title);
     print(btnkeys);
     print(carousel);
+    print("this is likes sections =>" + likesMap.toString());
     likesMap.forEach((key, value) {
       print('going inside key $key');
       List<String> likesid = [];
-      value.forEach((like) {
-        likesid.add(like.id);
-      });
+      if (value != null) {
+        value.forEach((like) {
+          likesid.add(like.id);
+          // print("this is post id $key likes => $like");
+        });
+      }
       likes.add(likesid);
     });
     for (int i = 0; i < likes.length; i++) {
@@ -838,7 +841,7 @@ class _PostsScreenState extends State<PostsScreen>
 
   void changeisLiked(int index) {}
 
-  void hitLikeApi() async {
+  void hitLikeApi(int index) async {
     Dio dio = new Dio();
     print('this is token => ' + SessionData().token);
     dio.options.headers['Authorization'] = 'Bearer ' + SessionData().token;
@@ -849,7 +852,7 @@ class _PostsScreenState extends State<PostsScreen>
       _isDialogShowing = true;
     });
     try {
-      String url = '$commonapi/bikesGallery/like';
+      String url = '$commonapi/api/v1/post/likePost/$selectedPostId';
       print('selectedPostId => ' + selectedPostId);
       print(url);
       var body = json.encode({"postId": selectedPostId});
@@ -858,20 +861,26 @@ class _PostsScreenState extends State<PostsScreen>
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + SessionData().token
       };
-      final request = await http.put(url, body: body, headers: headers);
+      final request = await dio.put(url);
       print(request.statusCode);
       if (request.statusCode == 200) {
         if (_isDialogShowing) {
           Navigator.pop(context);
           setState(() {
             _isDialogShowing = false;
+            _isLiked[index] = true;
           });
         }
-        print(request.body.toString());
-        Map jsonResponse = json.decode(request.body);
-        setState(() {
-          allPostsModel = AllPostsModel.fromJson(jsonResponse);
+        print(request.data.toString());
+        likesMap.update("$selectedPostId", (value) {
+          print("this is old value => $value");
+          return request.data["postLikedDetails"]["likes"];
         });
+        print("this is new likesMap => $likesMap");
+        // Map jsonResponse = json.decode(request.body);
+        // setState(() {
+        //   allPostsModel = AllPostsModel.fromJson(jsonResponse);
+        // });
       }
     } on DioError catch (e) {
       if (_isDialogShowing) {
@@ -884,7 +893,7 @@ class _PostsScreenState extends State<PostsScreen>
     }
   }
 
-  void hitunLikeApi() async {
+  void hitunLikeApi(int index) async {
     Dio dio = new Dio();
     print('this is token => ' + SessionData().token);
     dio.options.headers['Authorization'] = 'Bearer ' + SessionData().token;
@@ -895,29 +904,25 @@ class _PostsScreenState extends State<PostsScreen>
       _isDialogShowing = true;
     });
     try {
-      String url = '$commonapi/bikesGallery/unlike';
+      String url = '$commonapi/api/v1/post/unlikePost/$selectedPostId';
       print('selectedPostId => ' + selectedPostId);
       print(url);
-      var body = json.encode({"postId": selectedPostId});
-
-      var headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SessionData().token
-      };
-      final request = await http.put(url, body: body, headers: headers);
+      final request = await dio.put(url);
       print(request.statusCode);
       if (request.statusCode == 200) {
         if (_isDialogShowing) {
           Navigator.pop(context);
           setState(() {
             _isDialogShowing = false;
+            _isLiked[index] = false;
           });
         }
-        print(request.body.toString());
-        Map jsonResponse = json.decode(request.body);
-        setState(() {
-          allPostsModel = AllPostsModel.fromJson(json.decode(request.body));
+        print(request.data.toString());
+        likesMap.update("$selectedPostId", (value) {
+          print("this is old value => $value");
+          return request.data["postUnlikedDetails"]["likes"];
         });
+        print("this is new likesMap => $likesMap");
       }
     } on DioError catch (e) {
       if (_isDialogShowing) {
@@ -981,8 +986,8 @@ class _PostsScreenState extends State<PostsScreen>
     setState(() {
       _isDialogShowing = true;
     });
-    String url =
-        '$commonapi/comments/addComment/' + allPostsModel.data[index].id;
+    String url = '$commonapi/api/v1/postComments/addPostComment/' +
+        allPostsModel.data[index].id;
     print(url);
     var body = json.encode({"commentText": commentText.text});
 
@@ -1095,13 +1100,11 @@ class _PostsScreenState extends State<PostsScreen>
 
   void getSelectedPostsLikes(int index) {
     selectedPostlikes = [];
-    allPostsModel.data[index].likes.forEach((element) {
-      print(element.name);
-      selectedPostlikes.add(element.name);
+
+    likesMap[postIds[index]].forEach((like) {
+      selectedPostlikes.add(like["name"]);
     });
-    if (allPostsModel.data[index].likes.length == selectedPostlikes.length) {
-      openLikes(index);
-    }
+    openLikes(index);
   }
 
   void getSelectedPostsComments(int index) {

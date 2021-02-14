@@ -53,8 +53,8 @@ class Datum {
   });
 
   List<String> postImages;
-  List<dynamic> likes;
-  List<dynamic> comments;
+  List<LikedBy> likes;
+  List<Comment> comments;
   String postCreatedAt;
   String id;
   String title;
@@ -70,10 +70,11 @@ class Datum {
             : List<String>.from(json["postImages"].map((x) => x)),
         likes: json["likes"] == null
             ? null
-            : List<dynamic>.from(json["likes"].map((x) => x)),
+            : List<LikedBy>.from(json["likes"].map((x) => LikedBy.fromJson(x))),
         comments: json["comments"] == null
             ? null
-            : List<dynamic>.from(json["comments"].map((x) => x)),
+            : List<Comment>.from(
+                json["comments"].map((x) => Comment.fromJson(x))),
         postCreatedAt:
             json["postCreatedAt"] == null ? null : json["postCreatedAt"],
         id: json["_id"] == null ? null : json["_id"],
@@ -95,10 +96,12 @@ class Datum {
         "postImages": postImages == null
             ? null
             : List<dynamic>.from(postImages.map((x) => x)),
-        "likes": likes == null ? null : List<dynamic>.from(likes.map((x) => x)),
+        "likes": likes == null
+            ? null
+            : List<dynamic>.from(likes.map((x) => x.toJson())),
         "comments": comments == null
             ? null
-            : List<dynamic>.from(comments.map((x) => x)),
+            : List<dynamic>.from(comments.map((x) => x.toJson())),
         "postCreatedAt": postCreatedAt == null ? null : postCreatedAt,
         "_id": id == null ? null : id,
         "title": title == null ? null : title,
@@ -107,6 +110,66 @@ class Datum {
         "createdAt": createdAt == null ? null : createdAt.toIso8601String(),
         "updatedAt": updatedAt == null ? null : updatedAt.toIso8601String(),
         "__v": v == null ? null : v,
+      };
+}
+
+class Comment {
+  Comment({
+    this.id,
+    this.commentText,
+    this.commentedByUserId,
+    this.commentedByUserName,
+    this.createdAt,
+  });
+
+  String id;
+  String commentText;
+  String commentedByUserId;
+  String commentedByUserName;
+  DateTime createdAt;
+
+  factory Comment.fromJson(Map<String, dynamic> json) => Comment(
+        id: json["_id"] == null ? null : json["_id"],
+        commentText: json["commentText"] == null ? null : json["commentText"],
+        commentedByUserId: json["commentedByUserId"] == null
+            ? null
+            : json["commentedByUserId"],
+        commentedByUserName: json["commentedByUserName"] == null
+            ? null
+            : json["commentedByUserName"],
+        createdAt: json["createdAt"] == null
+            ? null
+            : DateTime.parse(json["createdAt"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "_id": id == null ? null : id,
+        "commentText": commentText == null ? null : commentText,
+        "commentedByUserId":
+            commentedByUserId == null ? null : commentedByUserId,
+        "commentedByUserName":
+            commentedByUserName == null ? null : commentedByUserName,
+        "createdAt": createdAt == null ? null : createdAt.toIso8601String(),
+      };
+}
+
+class LikedBy {
+  LikedBy({
+    this.id,
+    this.name,
+  });
+
+  String id;
+  String name;
+
+  factory LikedBy.fromJson(Map<String, dynamic> json) => LikedBy(
+        id: json["_id"] == null ? null : json["_id"],
+        name: json["name"] == null ? null : json["name"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "_id": id == null ? null : id,
+        "name": name == null ? null : name,
       };
 }
 
